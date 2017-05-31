@@ -10,7 +10,7 @@ from datetime import datetime
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg as FigCanvas
 
-from utils import Screenshot, XboxController
+from utils import Screenshot, XboxController, KeyBoradController
 
 IDLE_SAMPLE_RATE = 1500
 SAMPLE_RATE = 200
@@ -25,9 +25,10 @@ class MainWindow(wx.Frame):
         wx.Frame.__init__(self, None, title=self.title, size=(660,330))
 
         # Init controller
-        self.controller = XboxController()
+        #self.controller = XboxController()
+        self.controller = KeyBoradController()
 
-         # Create GUI
+        # Create GUI
         self.create_main_panel()
 
         # Timer
@@ -98,6 +99,8 @@ class MainWindow(wx.Frame):
     def poll(self):
         self.bmp = self.take_screenshot()
         self.controller_data = self.controller.read()
+        print "---keyboard---"
+        print self.controller_data
         self.update_plot()
 
         if self.recording == True:
@@ -124,6 +127,7 @@ class MainWindow(wx.Frame):
 
         # write line
         outfile.write( image_file + ',' + ','.join(map(str, self.controller_data)) + '\n' )
+        print self.controller_data
         outfile.close()
 
         self.t += 1

@@ -18,6 +18,8 @@ import matplotlib.image as mpimg
 from inputs import get_gamepad
 import math
 import threading
+from evdev import InputDevice
+from select import select
 
 
 def prepare_image(img):
@@ -52,7 +54,64 @@ class Screenshot(object):
 
     image_array = array.array('B', [0] * (SRC_W * SRC_H * SRC_D));
 
+class KeyBoradController(object):
 
+    MAX_TRIG_VAL = math.pow(2, 8)
+    MAX_JOY_VAL = math.pow(2, 15)
+
+    def __init__(self):
+
+        self.LeftJoystickY = 0
+        self.LeftJoystickX = 0
+        self.RightJoystickY = 0
+        self.RightJoystickX = 0
+        self.LeftTrigger = 0
+        self.RightTrigger = 0
+        self.LeftBumper = 0
+        self.RightBumper = 0
+        self.A = 0
+        self.X = 0
+        self.Y = 0
+        self.B = 0
+        self.LeftThumb = 0
+        self.RightThumb = 0
+        self.Back = 0
+        self.Start = 0
+        self.LeftDPad = 0
+        self.RightDPad = 0
+        self.UpDPad = 0
+        self.DownDPad = 0
+
+        self.dev = InputDevice('/dev/input/event1')
+        self._monitor_thread = threading.Thread(target=self._monitor_controller, args=())
+        self._monitor_thread.daemon = True
+        self._monitor_thread.start()
+
+
+    def read(self):
+        x = self.LeftJoystickX
+        y = self.LeftJoystickY
+        a = self.A
+        b = self.X # b=1, x=2
+        rb = self.RightBumper
+        return [x, y, a, b, rb]
+
+
+    def _monitor_controller(self):
+        while True:
+            select([self.dev], [], [])
+            for event in self.dev.read():
+                if (event.value == 1 or event.value == 0) and event.code != 0:
+                    
+                    print "Key: %s Status: %s" % (event.code, "pressed" if event.value else "release")
+                    if event.code == 42:
+                        print "event.code num 42"
+                        self.A = event.value
+                    if event.code == 105:
+                        self.LeftJoystickX = event.value
+                    if event.code == 106:
+                        self.LeftJoystickY = event.value
+                        
 
 class XboxController(object):
 
